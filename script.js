@@ -1,6 +1,78 @@
 if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) { const observer = new IntersectionObserver(entries => entries.forEach(entry => {if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}}),{threshold:0.1}); document.querySelectorAll('.scene h2,.tiles,.tags').forEach(el=>{el.classList.add('reveal');observer.observe(el);}); }
-const toggle=document.querySelector('#chatToggle'),chat=document.querySelector('#chat');toggle.addEventListener('click',()=>{chat.hidden=!chat.hidden;toggle.setAttribute('aria-expanded',String(!chat.hidden));});const answers={skills:'Python, FastAPI, Flask, SQL, PostgreSQL, LangChain, LangGraph, RAG, LLMs and machine learning.',projects:'Hire SenseAI, AI-Powered Full Stack Job Board, and Android Malware Detection. See Work for details.',experience:'Machine Learning and Generative AI internship at Ignitz Solutions, Hyderabad.',contact:'Email charanannangi7@gmail.com or connect through LinkedIn or GitHub.'};chat.querySelectorAll('[data-topic]').forEach(b=>b.addEventListener('click',()=>document.querySelector('#answer').textContent=answers[b.dataset.topic]));if(!matchMedia('(prefers-reduced-motion: reduce)').matches){const c=document.querySelector('#particles'),ctx=c.getContext('2d');let w,h;const dots=Array.from({length:65},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.8+.5,s:Math.random()*.0006+.0002}));function resize(){w=c.width=c.clientWidth;h=c.height=c.clientHeight}resize();addEventListener('resize',resize);function frame(){ctx.clearRect(0,0,w,h);ctx.fillStyle='#ff596b88';for(const d of dots){d.y=(d.y+1-d.s)%1;ctx.beginPath();ctx.arc(d.x*w,d.y*h,d.r,0,Math.PI*2);ctx.fill()}requestAnimationFrame(frame)}frame();document.querySelectorAll('.tiles article').forEach(a=>{a.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;let r=a.getBoundingClientRect();a.style.transform=`perspective(800px) rotateY(${(e.clientX-r.left-r.width/2)/r.width*12}deg) rotateX(${-(e.clientY-r.top-r.height/2)/r.height*12}deg)`});a.addEventListener('pointerleave',()=>a.style.transform='')})}
+const API_URL = "https://charan-ai-backend.onrender.com/chat";
 
-;(()=>{const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches, opening=document.querySelector('#opening'), video=opening.querySelector('video'), skip=document.querySelector('#skipIntro');let timer;function close(){clearTimeout(timer);opening.classList.remove('active');skip.hidden=true;video.pause()}if(!reduced){opening.classList.add('active');skip.hidden=false;skip.addEventListener('click',close);video.addEventListener('ended',close);video.addEventListener('error',close);timer=setTimeout(close,4800);video.play().catch(close)}const hero=document.querySelector('.hero');function scroll(){const y=scrollY, max=document.documentElement.scrollHeight-innerHeight;document.body.style.setProperty('--progress',`${max>0?100*y/max:0}%`);if(!reduced){hero.style.setProperty('--zoom',1+Math.min(y/3000,.16));hero.style.setProperty('--lift',`${Math.min(y*.08,42)}px`)}}addEventListener('scroll',scroll,{passive:true});scroll();if(!reduced){hero.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const r=hero.getBoundingClientRect();hero.style.setProperty('--px',`${(e.clientX-r.left-r.width/2)*.018}px`);hero.style.setProperty('--py',`${(e.clientY-r.top-r.height/2)*.018}px`)});hero.addEventListener('pointerleave',()=>{hero.style.setProperty('--px','0px');hero.style.setProperty('--py','0px')})}})();
+async function askAI(message) {
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
 
-document.querySelector('#contactForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.currentTarget);location.href='mailto:charanannangi7@gmail.com?subject='+encodeURIComponent('Portfolio inquiry from '+d.get('name'))+'&body='+encodeURIComponent(d.get('message')+'\n\nFrom: '+d.get('name')+'\nEmail: '+d.get('email'));});
+        if (!response.ok) {
+            throw new Error("API request failed");
+        }
+
+        const data = await response.json();
+        return data.reply;
+
+    } catch (error) {
+        console.error(error);
+        return "AI assistant is temporarily unavailable.";
+    }
+}
+
+
+function toggleChat() {
+    const chatbox = document.getElementById("chatbox");
+
+    chatbox.style.display =
+        chatbox.style.display === "block"
+        ? "none" : "block";
+}
+
+let sending = false;
+
+async function sendMessage() {
+    const input = document.getElementById("user-input");
+    const message = input.value.trim();
+
+    if (!message || sending) return;
+
+    sending = true;
+    addMessage(message, "user-message");
+    input.value = "";
+
+    const loading = addMessage(
+        "Thinking...", "bot-message"
+    );
+
+    try {
+        const reply = await askAI(message);
+        loading.textContent = reply;
+    } catch (error) {
+        loading.textContent = "AI assistant unavailable.";
+    } finally {
+        sending = false;
+    }
+
+    const messages = document.getElementById("chat-messages");
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function addMessage(text, className) {
+    const messages = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+
+    div.className = className;
+    div.textContent = text;
+
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+
+    return div;
+}
