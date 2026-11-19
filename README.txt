@@ -1,1 +1,1 @@
-Upload index.html, style.css, script.js and hero.webp to the root of your existing GitHub repository. No build required. The assistant is a local FAQ. Resume PDF not included.
+Version 3: upload all files at repository root. Intro video is an animated still portrait, not walking footage. Reduced-motion setting skips intro. FAQ is offline. Resume PDF not included.
