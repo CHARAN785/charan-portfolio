@@ -1,1 +1,1 @@
-Version 3: upload all files at repository root. Intro video is an animated still portrait, not walking footage. Reduced-motion setting skips intro. FAQ is offline. Resume PDF not included.
+V4: Upload all files to your GitHub Pages repository root. Resume PDF is public if deployed. Contact form opens an email draft; no backend. Project-specific URLs were not supplied; GitHub profile link is used instead.
